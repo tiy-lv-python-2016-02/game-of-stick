@@ -7,10 +7,28 @@ def next_game():
     :return: Player input.
     """
     print("")
-    next_game = " "
-    while next_game not in "yn":
-        next_game = input("Play again? [y/n]: ").lower()
-    return next_game == "y"
+    another_game = " "
+    while another_game not in "yn":
+        another_game = input("Play again? [y/n]: ").lower()
+    return another_game == "y"
+
+
+def train_ai(rounds=10000):
+    """
+    Train an AI player and return their self.hats dictionary.
+    Rounds is set to 10000, more than that takes a noticeably long time
+    to run.
+    :return: hats dictionary for a PlayerAI instance.
+    """
+    player2, player3 = PlayerAI(2), PlayerAI(3)
+    for _ in range(rounds):
+        game = Game(100, player2, player3)
+        loser = game.run_game()
+        if loser == 2:
+            player2.update_after_result(False)
+        else:
+            player2.update_after_result(True)
+    return player2.hats
 
 
 class Player:
@@ -42,10 +60,14 @@ class Player:
 
 
 class PlayerAI(Player):
+    """
+    Player class that is run by a learning AI.
+    """
     def __init__(self, number):
         super().__init__(number)
         self.used_plays = []
         self.is_human = False
+        self.initialize_hat()
 
     def initialize_hat(self, max_number=100):
         """
@@ -56,7 +78,6 @@ class PlayerAI(Player):
         self.hats = {i: [1, 2, 3] for i in range(3, max_number + 1)}
         self.hats[2] = [1, 2]
         self.hats[1] = [1]
-        return self.hats
 
     def make_selection(self, total_sticks):
         """
@@ -65,7 +86,8 @@ class PlayerAI(Player):
         :return: Number of sticks to pick up.
         """
         choice = random.choice(self.hats[total_sticks])
-        print("The AI selects {}".format(choice))
+        if self.is_human:
+            print("The AI selects {}".format(choice))
         self.used_plays.append((total_sticks, choice))
         return choice
 
@@ -86,11 +108,25 @@ class PlayerAI(Player):
 
 
 class Game:
+    """
+    This is the main game class which takes two players as arguments,
+    handles the turns, and declares a winner.
+
+    The print statements are put under if statements so that they do not
+    run when there is no human player in the game. This is very nice
+    when training two AI players against each other.
+    """
     def __init__(self, starting_sticks, player1, player2):
         self.sticks = starting_sticks
         self.player1 = player1
         self.player2 = player2
         self.players = [self.player1, self.player2]
+
+    def remove_sticks(self, number):
+        """
+        Remove sticks from self.sticks.
+        """
+        self.sticks -= number
 
     def turn(self):
         """
@@ -100,10 +136,11 @@ class Game:
         player number or zero.
         """
         for player in self.players:
-            print("\nIt is player {}'s turn".format(player.player_number))
-            print("There are {} sticks on the board".format(self.sticks))
+            if self.player1.is_human:
+                print("\nIt is player {}'s turn".format(player.player_number))
+                print("There are {} sticks on the board".format(self.sticks))
             action = player.make_selection(self.sticks)
-            self.sticks -= action
+            self.remove_sticks(action)
 
             if self.sticks < 1:
                 return 0, player.player_number
@@ -117,8 +154,9 @@ class Game:
         while self.sticks > 0:
             results = self.turn()
             self.sticks = results[0]
-        print("Player {} has lost.".format(results[1]))
-        print("Game over")
+        if self.player1.is_human:
+            print("Player {} has lost.".format(results[1]))
+            print("Game over")
         return results[1]
 
 
@@ -133,12 +171,13 @@ if __name__ == '__main__':
 
     starting = int(starting)
 
-    game_mode = "0"
+    game_mode = " "
 
-    while not game_mode.isnumeric() or int(game_mode) not in [1, 2]:
+    while not game_mode.isnumeric() or int(game_mode) not in [1, 2, 3]:
         print("Options:",
               "Play against a friend (1)",
               "Play against the computer (2)",
+              "Play against a trained AI (3)",
               sep="\n"
               )
 
@@ -147,25 +186,48 @@ if __name__ == '__main__':
     game_mode = int(game_mode)
     new_game = True
 
+    player1 = Player(1)
+
     if game_mode == 1:
-        player1 = Player(1)
         player2 = Player(2)
     elif game_mode == 2:
-        player1 = Player(1)
         player2 = PlayerAI(2)
-        player2.initialize_hat()
+    elif game_mode == 3:
+        print("Training AI...")
+        player2 = PlayerAI(2)
+        player2.hats = train_ai()
 
     while new_game:
         active_game = Game(starting, player1, player2)
         loser = active_game.run_game()
 
+        # Update hats if player2 is an AI.
         if loser == 1 and not player2.is_human:
             player2.update_after_result(True)
         elif loser == 2 and not player2.is_human:
             player2.update_after_result(False)
 
-        print(player2.hats)
-
         new_game = next_game()
 
 
+"""
+Strategy analysis.
+
+The optimal strategy for Game of Sticks can be found by working backwards
+from the end. A player can always win if they have 2, 3, or 4 sticks at
+the start of their turn since they will be able to leave their opponent with
+exactly one.
+
+The only way to force an opponent to leave 2, 3, 4 sticks is to start their
+turn with 5. In other words, if your opponent starts a turn with 5 sticks
+remaining, you can always win.
+
+Given that leaving the other player with 5 sticks is a guaranteed win,
+starting a turn with 6, 7, or 8 sticks is likewise a win. The only
+way to start a turn with 6, 7, or 8 sticks? Have your opponent start their
+turn with exactly 9.
+
+The strategy ends up being fairly simple. If you can force your opponent to
+start their turn with 5 sticks in play or 9, 13, 17, or any multiple of 4
+after that, you can always win.
+"""
