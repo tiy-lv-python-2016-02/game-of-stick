@@ -1,43 +1,86 @@
+import random
+
 class Player:
 
-    def __init__(self, player_input, turn=1):
-        self.turn = turn
-        self.player_input = player_input
+    def __init__(self, name):
+        self.name = name
 
-    def player_input(self):
-        while self.player_input:
-            self.player_input = int(input("PLAYER {}: How many sticks do you take?\
-            (1-3) ".format(self.turn)))
-            return self.player_input
+    def take_sticks(self, total_sticks):
+        answer = ""
+        while not answer.isnumeric() or int(answer) < 1 or int(answer) > 3:
+            answer = input("{}: How many sticks do you take? (1-3) ".format(self.name))
+        return answer
+
+
+class DumbAIPlayer(Player):
+
+    def take_sticks(self, total_sticks):
+        if total_sticks >= 4:
+            answer = 3
+        elif total_sticks <= 4:
+            answer = total_sticks - 1
+        print("Dumb AI Player took {} stick(s).".format(answer))
+        return answer
+
+class RandomAI(Player):
+
+    def take_sticks(self, total_sticks):
+        answer = random.randint(1,3)
+        print("Random AI Player took {} stick(s).".format(answer))
+        return answer
 
 
 class Game:
 
-    def __init__(self, sticks, move):
-        self.sticks = int(sticks)
-        self.move = move
-        self.players = 2
-        self.turn = 1
+    def __init__(self, player1, player2, starting_sticks):
+        self.player1 = player1
+        self.player2 = player2
+        self.current_player = player1
+        self.sticks = starting_sticks
+        self.loser = None
 
-    def sticks_remaining(self):
-        return len(range(self.sticks))
+    def start(self):
 
-    def remove_sticks(self, removed):
-        self.sticks -= int(removed)
-        return self.sticks
+        while self.sticks >= 2:
+            print("{} sticks remain.".format(self.sticks))
+            self.sticks -= int(self.current_player.take_sticks(self.sticks))
+            self.switch_player()
 
-    def __str__(self):
-        return str(self.sticks) + "remain.."
+        print("{} had to pick up the last stick. {} Loses.".format\
+                  (self.current_player.name, self.current_player.name))
 
-    def win_condition(self):
-        while self.sticks == 1 or self.sticks == 0:
-            print("{} loses".format(self.turn))
+    def switch_player(self):
 
+        if self.current_player == self.player1:
+            self.current_player = self.player2
+        else:
+            self.current_player = self.player1
 
 if __name__ == '__main__':
-    starting_sticks = input("Type the starting stick amount. 10-100:\n>>>")
-    print("STARTING STICKS: {}".format(starting_sticks))
-    player_move = ''
-    game_start = Game(starting_sticks, player_move)
+
+    print("How many sticks would you like to start?")
+
+    sticks_to_start = " "
+
+    while not sticks_to_start.isnumeric() or int(sticks_to_start)\
+            not in range(10, 101):
+        sticks_to_start = input("Enter a number 10-100: ")
+
+    sticks_to_start = int(sticks_to_start)
+
+    player1 = Player("Player 1")
+    player2 = DumbAIPlayer("Player 2")
+
+    game = Game(player1, player2, sticks_to_start)
+
+    while 100 >= sticks_to_start >= 10:
+        game.start()
+        break
+
+
+
+
+
+
 
 
