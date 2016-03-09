@@ -1,5 +1,6 @@
 import random
 
+
 class Player:
 
     def __init__(self, name):
@@ -7,7 +8,7 @@ class Player:
 
     def take_sticks(self, total_sticks):
         answer = ""
-        while not answer.isnumeric() or int(answer) < 1 or int(answer) > 3:
+        while not answer.isnumeric() or int(answer) not in range(1,4):
             answer = input("{}: How many sticks do you take? (1-3) ".format(self.name))
         return answer
 
@@ -21,6 +22,13 @@ class DumbAIPlayer(Player):
             answer = total_sticks - 1
         print("Dumb AI Player took {} stick(s).".format(answer))
         return answer
+
+
+class HatAIPlayer(Player):
+
+    def __init__(self, name):
+        super().__init__(name)
+
 
 class RandomAI(Player):
 
@@ -60,7 +68,9 @@ if __name__ == '__main__':
 
     print("How many sticks would you like to start?")
 
-    sticks_to_start = " "
+    mode = ""
+
+    sticks_to_start = ""
 
     while not sticks_to_start.isnumeric() or int(sticks_to_start)\
             not in range(10, 101):
@@ -68,19 +78,22 @@ if __name__ == '__main__':
 
     sticks_to_start = int(sticks_to_start)
 
-    player1 = Player("Player 1")
-    player2 = DumbAIPlayer("Player 2")
+    print("\nPlay against a (1)friend or play against the (2)computer?")
+
+    while not mode.isnumeric() or int(mode) not in [1, 2]:
+        mode = input("\n~>")
+
+    mode = int(mode)
+
+    if mode == 1:
+        player1 = Player("Player 1")
+        player2 = Player("Player 2")
+    else:
+        player1 = Player("Player 1")
+        player2 = DumbAIPlayer("Player 2")
 
     game = Game(player1, player2, sticks_to_start)
 
     while 100 >= sticks_to_start >= 10:
         game.start()
         break
-
-
-
-
-
-
-
-
