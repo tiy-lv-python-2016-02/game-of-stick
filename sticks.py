@@ -7,15 +7,27 @@ class Player:
         self.name = name
 
     def take_sticks(self, total_sticks):
+        """
+        Takes user input on how many sticks they want to pick up.
+        :param total_sticks: Current total sticks
+        :return: Player's answer to how many sticks they want to remove.
+        """
         answer = ""
         while not answer.isnumeric() or int(answer) not in range(1,4):
-            answer = input("{}: How many sticks do you take? (1-3) ".format(self.name))
+            answer = input("{}: How many sticks do you take? (1-3) "\
+                           .format(self.name))
         return answer
 
 
 class DumbAIPlayer(Player):
+    """
+    AI player that always takes 3 sticks when the amount is greater
+    than 4. If less than 4, it'll pick up just enough to leave the
+    other player with 1.
+    """
 
     def take_sticks(self, total_sticks):
+
         if total_sticks >= 4:
             answer = 3
         elif total_sticks <= 4:
@@ -28,12 +40,16 @@ class HatAIPlayer(Player):
 
     def __init__(self, name):
         super().__init__(name)
+        pass
 
 
 class RandomAI(Player):
+    """
+    Picks up a random number of sticks every turn
+    """
 
     def take_sticks(self, total_sticks):
-        answer = random.randint(1,3)
+        answer = random.randint(1, 3)
         print("Random AI Player took {} stick(s).".format(answer))
         return answer
 
@@ -54,8 +70,8 @@ class Game:
             self.sticks -= int(self.current_player.take_sticks(self.sticks))
             self.switch_player()
 
-        print("{} had to pick up the last stick. {} Loses.".format\
-                  (self.current_player.name, self.current_player.name))
+        print("{} had to pick up the last stick. {} Loses.".format
+              (self.current_player.name, self.current_player.name))
 
     def switch_player(self):
 
