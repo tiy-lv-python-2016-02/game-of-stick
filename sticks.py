@@ -18,6 +18,12 @@ class Player:
                            .format(self.name))
         return answer
 
+    def winning(self):
+        pass
+
+    def losing(self):
+        pass
+
 
 class DumbAIPlayer(Player):
     """
@@ -36,11 +42,80 @@ class DumbAIPlayer(Player):
         return answer
 
 
+class Hat:
+
+    def __init__(self):
+        self.hat_choices = [1,2,3]
+        self.choice = 0
+
+    def pick_sticks(self):
+
+        self.choice = random.choice(self.hat_choices)
+        return self.choice
+
+    def losing(self):
+        if self.choice > 0:
+            return
+
+        if self.hat_choices.count(self.choice) > 1:
+            index = self.hat_choices.index(self.choice)
+            del self.hat_choices[index]
+
+        self.choice = 0
+
+    def winning(self):
+        if self.choice > 0:
+            return
+
+        self.hat_choices.append(self.choice)
+
+        self.choice = 0
+
+
 class HatAIPlayer(Player):
 
-    def __init__(self, name):
-        super().__init__(name)
-        pass
+    def __init__(self, name, sticks_to_start):
+        super(HatAIPlayer, self).__init__(name)
+        self.name = name
+        self.hats = []
+
+        for stick in range(1, sticks_to_start + 1):
+            self.hats.append(Hat())
+
+    def take_sticks(self, remaining_sticks):
+
+        sticks_taken = self.hats[remaining_sticks].pick_sticks()
+        print("AI player took {} sticks.".format(sticks_taken))
+        return sticks_taken
+
+    def winning(self):
+        # self.hats.append(Hat.winning(self))
+        # return self.hats
+
+        for x in self.hats:
+            self.hats.append(Hat.winning(x))
+
+        # Hat.winning(self)
+
+    def losing(self):
+        for x in self.hats:
+            Hat.losing(x)
+
+        # self.hats += Hat.losing(self)
+
+        # for x in self.hats:
+            # Hat.losing(x)
+
+        # Hat.losing(self)
+
+
+    # loop through all hats
+    # call winning or losing
+    # tell player it won or loss
+    # game class calls winning or losing
+    # winning or losing method inside player
+    # player.winning pass
+
 
 
 class RandomAI(Player):
@@ -73,6 +148,11 @@ class Game:
         print("{} had to pick up the last stick. {} Loses.".format
               (self.current_player.name, self.current_player.name))
 
+        if self.current_player == self.player2:
+            self.player2.losing()
+        else:
+            self.player2.winning()
+
     def switch_player(self):
 
         if self.current_player == self.player1:
@@ -80,21 +160,22 @@ class Game:
         else:
             self.current_player = self.player1
 
-if __name__ == '__main__':
 
-    print("How many sticks would you like to start?")
+if __name__ == '__main__':
 
     mode = ""
 
     sticks_to_start = ""
 
+    print("How many sticks would you like to start?")
+
     while not sticks_to_start.isnumeric() or int(sticks_to_start)\
             not in range(10, 101):
-        sticks_to_start = input("Enter a number 10-100: ")
+        sticks_to_start = input("Enter number 10-100: ")
 
-    sticks_to_start = int(sticks_to_start)
+    sticks_remain = int(sticks_to_start)
 
-    print("\nPlay against a (1)friend or play against the (2)computer?")
+    print("\n(1)Train AI or send your trained AI to battle the (2)computer?")
 
     while not mode.isnumeric() or int(mode) not in [1, 2]:
         mode = input("\n~>")
@@ -103,13 +184,21 @@ if __name__ == '__main__':
 
     if mode == 1:
         player1 = Player("Player 1")
-        player2 = Player("Player 2")
+        player2 = HatAIPlayer("Player 2", sticks_remain)
     else:
-        player1 = Player("Player 1")
-        player2 = DumbAIPlayer("Player 2")
+        player1 = DumbAIPlayer("Player 1")
+        player2 = HatAIPlayer("Player 2", sticks_remain)
 
-    game = Game(player1, player2, sticks_to_start)
+    while 100 >= sticks_remain >= 10:
+        first_game = Game(player1, player2, sticks_remain)
+        first_game.start()
 
-    while 100 >= sticks_to_start >= 10:
-        game.start()
-        break
+        sticks_remain = int(sticks_to_start)
+
+        for x in range(1, 10):
+            new_game = Game(player1, player2, sticks_remain)
+            new_game.start()
+
+
+
+
