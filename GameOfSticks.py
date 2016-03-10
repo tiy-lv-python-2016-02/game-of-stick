@@ -13,29 +13,10 @@ def next_game():
     return another_game == "y"
 
 
-def train_ai(rounds=10000):
-    """
-    Train an AI player and return their self.hats dictionary.
-    Rounds is set to 10000, more than that takes a noticeably long time
-    to run.
-    :return: hats dictionary for a PlayerAI instance.
-    """
-    player2, player3 = PlayerAI(2), PlayerAI(3)
-    for _ in range(rounds):
-        game = Game(100, player2, player3)
-        loser = game.run_game()
-        if loser == 2:
-            player2.update_after_result(False)
-        else:
-            player2.update_after_result(True)
-    return player2.hats
-
-
 class Player:
     """
     Player class that makes decisions on how many sticks to pick up.
     """
-
     def __init__(self, number):
         self.player_number = number
         self.is_human = True
@@ -63,21 +44,48 @@ class PlayerAI(Player):
     """
     Player class that is run by a learning AI.
     """
-    def __init__(self, number):
+    def __init__(self, number, max_starting=100):
         super().__init__(number)
         self.used_plays = []
         self.is_human = False
-        self.initialize_hat()
+        self.max_starting = max_starting
+        self.winning_plays = []
 
-    def initialize_hat(self, max_number=100):
+        hats = {i: [1, 2, 3] for i in range(3, self.max_starting + 1)}
+        hats[2] = [1, 2]
+        hats[1] = [1]
+        self.hats = hats
+
+    def sim_round(self):
         """
-        Creates an initial dictionary of possible plays.
-        :param max_number: Highest number of sticks considered.
-        :return: Initial dictionary.
+        A single round of simulation to train the AI.
+        :return: The plays of the winning player.
         """
-        self.hats = {i: [1, 2, 3] for i in range(3, max_number + 1)}
-        self.hats[2] = [1, 2]
-        self.hats[1] = [1]
+        player3 = PlayerAI(3)
+        player2 = PlayerAI(2)
+        game = Game(self.max_starting, player2, player3)
+        loser = game.run_game()
+        if loser == 2:
+            self.winning_plays = player3.used_plays
+        else:
+            self.winning_plays = player2.used_plays
+
+    def update_brain(self):
+        """
+        :return: Brain updated with winning plays.
+        """
+        for sticks, play in self.winning_plays:
+            self.hats[sticks].append(play)
+
+    def train_ai(self, rounds=10000):
+        """
+        Trains the brain of the AI.
+        :param rounds: Number of training game.
+        :return: An updated_brain.
+        """
+        for _ in range(rounds):
+            self.sim_round()
+            self.update_brain()
 
     def make_selection(self, total_sticks):
         """
@@ -151,6 +159,7 @@ class Game:
         The main game function.
         :return: Player number of losing the losing player.
         """
+        results = None
         while self.sticks > 0:
             results = self.turn()
             self.sticks = results[0]
@@ -195,7 +204,8 @@ if __name__ == '__main__':
     elif game_mode == 3:
         print("Training AI...")
         player2 = PlayerAI(2)
-        player2.hats = train_ai()
+        player2.train_ai()
+        print(player2.hats[8][:12])
 
     while new_game:
         active_game = Game(starting, player1, player2)
