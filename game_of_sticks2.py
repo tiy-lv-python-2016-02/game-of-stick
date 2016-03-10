@@ -46,6 +46,27 @@ class Game:
             print("You lose, player {}.\nBetter luck next time.".format(outcome[1]))
         return outcome[1]
 
+"""
+class Hat:
+
+    def __init__(self):
+
+        def pick_sticks
+            ...
+
+        def losing(self)
+            ...
+
+        def winning(self)
+            if self.choice == 0
+                :return
+
+            self.hat_choices.append(self.choice)
+
+            ...
+
+"""
+
 class Player:
 
     def __init__(self, name):
@@ -62,6 +83,8 @@ class Player:
             print ("Try again. You cannnot pick that many sticks")
 
 
+
+
     def __str__(self):
         return "I am {}".format(self.player_number)
 
@@ -71,10 +94,6 @@ class PlayerAI(Player):
         self.name = name
         self.human_player = False
 
-        hats [3] = [1, 2, 3]
-        hats [2] = [1, 2]
-        hats [1] = [1]
-        self.hats = hats
 
     def pick_sticks(self, sticks_remaining):
         sticks_picked = random.sticks_picked[sticks_remaining]
