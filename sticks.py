@@ -5,6 +5,8 @@ class Player:
 
     def __init__(self, name):
         self.name = name
+        self.win = 0
+        self.loss = 0
 
     def take_sticks(self, total_sticks):
         """
@@ -19,10 +21,10 @@ class Player:
         return answer
 
     def winning(self):
-        pass
+        self.win += 1
 
     def losing(self):
-        pass
+        self.loss += 1
 
 
 class DumbAIPlayer(Player):
@@ -54,7 +56,7 @@ class Hat:
         return self.choice
 
     def losing(self):
-        if self.choice > 0:
+        if self.choice == 0:
             return
 
         if self.hat_choices.count(self.choice) > 1:
@@ -64,7 +66,7 @@ class Hat:
         self.choice = 0
 
     def winning(self):
-        if self.choice > 0:
+        if self.choice == 0:
             return
 
         self.hat_choices.append(self.choice)
@@ -89,33 +91,14 @@ class HatAIPlayer(Player):
         return sticks_taken
 
     def winning(self):
-        # self.hats.append(Hat.winning(self))
-        # return self.hats
 
-        for x in self.hats:
-            self.hats.append(Hat.winning(x))
-
-        # Hat.winning(self)
+        for hat in self.hats:
+            hat.winning()
 
     def losing(self):
-        for x in self.hats:
-            Hat.losing(x)
 
-        # self.hats += Hat.losing(self)
-
-        # for x in self.hats:
-            # Hat.losing(x)
-
-        # Hat.losing(self)
-
-
-    # loop through all hats
-    # call winning or losing
-    # tell player it won or loss
-    # game class calls winning or losing
-    # winning or losing method inside player
-    # player.winning pass
-
+        for hat in self.hats:
+            hat.losing()
 
 
 class RandomAI(Player):
@@ -150,8 +133,10 @@ class Game:
 
         if self.current_player == self.player2:
             self.player2.losing()
+            self.player1.winning()
         else:
             self.player2.winning()
+            self.player1.losing()
 
     def switch_player(self):
 
@@ -175,12 +160,14 @@ if __name__ == '__main__':
 
     sticks_remain = int(sticks_to_start)
 
-    print("\n(1)Train AI or send your trained AI to battle the (2)computer?")
+    print("\n(1)Train AI\n(2)AI training against the computer?")
 
     while not mode.isnumeric() or int(mode) not in [1, 2]:
         mode = input("\n~>")
 
     mode = int(mode)
+
+    play = True
 
     if mode == 1:
         player1 = Player("Player 1")
@@ -189,16 +176,16 @@ if __name__ == '__main__':
         player1 = DumbAIPlayer("Player 1")
         player2 = HatAIPlayer("Player 2", sticks_remain)
 
-    while 100 >= sticks_remain >= 10:
+    while play:
+
         first_game = Game(player1, player2, sticks_remain)
         first_game.start()
 
-        sticks_remain = int(sticks_to_start)
+        play_again = input("Play again? y/n? ")
 
-        for x in range(1, 10):
-            new_game = Game(player1, player2, sticks_remain)
-            new_game.start()
-
-
-
-
+        if play_again == "y":
+            play = True
+            sticks_remain = int(sticks_to_start)
+        else:
+            play = False
+            
