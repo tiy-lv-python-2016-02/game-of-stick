@@ -47,7 +47,7 @@ class DumbAIPlayer(Player):
 class Hat:
 
     def __init__(self):
-        self.hat_choices = [1,2,3]
+        self.hat_choices = [1, 2, 3]
         self.choice = 0
 
     def pick_sticks(self):
@@ -119,7 +119,6 @@ class Game:
         self.player2 = player2
         self.current_player = player1
         self.sticks = starting_sticks
-        self.loser = None
 
     def start(self):
 
@@ -188,4 +187,3 @@ if __name__ == '__main__':
             sticks_remain = int(sticks_to_start)
         else:
             play = False
-            
